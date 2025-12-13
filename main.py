@@ -36,7 +36,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # --- Helper Functions ---
 
 # Download necessary NLTK data (run once)
@@ -150,8 +149,8 @@ with st.sidebar:
     # This creates a nice clean menu with icons
     page = option_menu(
         menu_title="Navigation",  # Title (keep empty for cleaner look)
-        options=["Home", "Research Areas", "Projects", "Publications", "Contact"],
-        icons=["house", "diagram-3", "book", "envelope"], # Bootstrap icons
+        options=["Home", "Research Areas", "Projects", "Academic Service", "Publications", "Contact"],
+        icons=["house", "diagram-3", "gear", "chat-heart", "archive", "envelope"], # Bootstrap icons
         menu_icon="list",
         default_index=0,
         styles={
@@ -218,51 +217,61 @@ elif page == "Research Areas":
             st.error("Could not load research data.")
 
 elif page == "Publications":
-    st.title("📚 Selected Publications")
-    
+    st.title("📚 Publications")
+
     with st.spinner("Fetching publications..."):
         profile = fetch_my_profile()
         
     if profile:
         pubs = profile.get('publications', [])
         
-        # 1. Sort by year (Newest -> Oldest)
-        # We handle 'None' years by treating them as 0
-        pubs.sort(key=lambda x: int(x['bib'].get('pub_year', 0) or 0), reverse=True)
+        # 1. Clean and standardize years (Handle missing years as 0)
+        # We add a 'clean_year' key to each pub to make sorting/grouping easier
+        for p in pubs:
+            p['clean_year'] = int(p['bib'].get('pub_year', 0) or 0)
+
+        # 2. Get a list of unique sorted years (Newest first)
+        # set() removes duplicates, sorted() orders them
+        unique_years = sorted(list(set(p['clean_year'] for p in pubs)), reverse=True)
         
-        # 2. Variable to track the year headers
-        current_year = None
+        # 3. Create Tab Labels (Convert 0 to "Unknown" for better UX)
+        tab_labels = [str(y) if y != 0 else "Unknown" for y in unique_years]
         
-        # Loop through ALL publications (removed the [:10] limit)
-        for pub in pubs:
-            bib = pub['bib']
-            title = bib.get('title', 'Untitled')
-            num_citations = pub['num_citations']
-            year = bib.get('pub_year', 'Unknown Year')
-            print(num_citations)
-            # --- THE GROUPING LOGIC ---
-            # If this paper's year is different from the last one we printed...
-            if year != current_year:
-                # ...print a new Big Year Heading
-                st.markdown(f"### {year}")
-                st.markdown("---") # Add a line for visual separation
-                current_year = year
-            # --------------------------
+        if not tab_labels:
+            st.write("No publications found.")
+        else:
+            # 4. Generate the Tabs
+            tabs = st.tabs(tab_labels)
             
-            # Display the paper under the year
-            # We use a cleaner layout without expanders for a CV-style look
-            #st.markdown(f"**{title}**")
-            
-            # Helper to create the Google Scholar link
-            link = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={MY_SCHOLAR_ID}&citation_for_view={pub['author_pub_id']}"
-            with st.expander(f"{title}"):
-                st.write(f"Citations: {num_citations}")
-                st.write(f"View Details: {link}")
-            # precise spacing between papers
-            st.write("") 
+            # 5. Fill each tab with the corresponding papers
+            for tab, year in zip(tabs, unique_years):
+                with tab:
+                    # Filter papers for the current tab's year
+                    year_pubs = [p for p in pubs if p['clean_year'] == year]
+                    
+                    for pub in year_pubs:
+                        bib = pub['bib']
+                        title = bib.get('title', 'Untitled')
+                        num_citations = pub.get('num_citations', 0)
+                        
+                        # Generate Link
+                        # Check if specific pub ID exists, otherwise link to main profile
+                        if 'author_pub_id' in pub:
+                            link = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={MY_SCHOLAR_ID}&citation_for_view={pub['author_pub_id']}"
+                        else:
+                            link = f"https://scholar.google.com/citations?user={MY_SCHOLAR_ID}"
+
+                        # Display Paper using Expander
+                        with st.expander(f"{title}"):
+                            st.write(f"**Citations:** {num_citations}")
+                            st.markdown(f"[View on Google Scholar]({link})")
+                            
+                            # Optional: Add extra bibliographic info if available
+                            if 'citation' in bib:
+                                st.caption(f"Ref: {bib['citation']}")
 
     else:
-        st.write("Publications could not be loaded.")
+        st.error("Publications could not be loaded.")
 
 elif page == "Projects":
     st.title("🚀 Ongoing Projects")
@@ -272,6 +281,14 @@ elif page == "Projects":
     - **Assistive Technology in the Global South:** Researching affordable and effective assistive technologies tailored for low-resource settings.
     - **Participatory Design Workshops:** Engaging with communities to co-create solutions that address their unique accessibility challenges.
     """)
+
+elif page == "Academic Service":
+    st.title("Academic Service")
+
+    tab1,tab2 = st.tabs(["2025", "2024"])
+    
+    tab1.write("Tab 1")
+    tab2.write("Tab 2")
 
 elif page == "Contact":
     st.title("📬 Get in Touch")
