@@ -15,7 +15,7 @@ MY_SCHOLAR_ID = "CpkUcT0AAAAJ"
 MY_NAME = "Maryam Bandukda"
 YEAR = date.today().year
 THEME_COUNT=4
-IMAGE_URL = "/Users/maryambandukda/Documents/GitHub/Portfolio/portfolio/Maryam.jpg"
+IMAGE_URL = "Maryam.jpg"
 
 # --- FIX: DOWNLOAD NLTK DATA ---
 # This forces the download to happen effectively both locally and on the cloud
