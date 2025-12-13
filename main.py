@@ -8,6 +8,14 @@ from nltk.corpus import stopwords
 from collections import Counter
 import re
 
+# --- Constants ---
+# Your specific Google Scholar ID (Found via search)
+# This ensures the map loads YOU immediately without searching.
+MY_SCHOLAR_ID = "CpkUcT0AAAAJ" 
+MY_NAME = "Maryam Bandukda"
+YEAR = date.today().year
+THEME_COUNT=4
+
 # --- FIX: DOWNLOAD NLTK DATA ---
 # This forces the download to happen effectively both locally and on the cloud
 try:
@@ -27,12 +35,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Constants ---
-# Your specific Google Scholar ID (Found via search)
-# This ensures the map loads YOU immediately without searching.
-MY_SCHOLAR_ID = "CpkUcT0AAAAJ" 
-MY_NAME = "Maryam Bandukda"
-YEAR = date.today().year
 
 # --- Helper Functions ---
 
@@ -70,7 +72,7 @@ def generate_ai_interests(publications):
     bigram_counts = Counter(bigrams)
     
     # Get top 7 themes
-    top_themes = bigram_counts.most_common(7)
+    top_themes = bigram_counts.most_common(THEME_COUNT)
     
     # Format as strings ("visual impairment")
     return [f"{t[0]} {t[1]}".title() for t, _ in top_themes]
@@ -91,9 +93,9 @@ def fetch_my_profile():
 def create_mindmap(author):
     if not author: return None
 
-    dot = graphviz.Digraph(comment='Research Landscape')
-    dot.attr(rankdir='LR', splines='curved', ranksep='1.2')
-    dot.attr('node', fontname='Helvetica', shape='box', style='rounded,filled', penwidth='0')
+    dot = graphviz.Digraph(comment='Research Areas')
+    dot.attr(rankdir='LR')
+    dot.attr('node', fontname='Helvetica', shape='box', style='rounded, filled', penwidth='0')
     
     # --- DATA PREP ---
     # 1. Try to get AI generated themes from publications first
@@ -107,31 +109,38 @@ def create_mindmap(author):
     # Decide which to show
     if ai_themes:
         display_interests = ai_themes
-        hub_label = "AI-Detected Themes"
+        hub_label = "AI-Generated Themes"
         hub_color = "#E8F5E9" # Green tint for AI
-    else:
-        display_interests = manual_interests[:6]
-        hub_label = "Focus Areas"
-        hub_color = "#edf2f7" # Grey tint for manual
+
+    if manual_interests:
+        hub_label_manual = "Focus Areas"
+        hub_color_manual = "#edf2f7" # Grey tint for manual
 
     # --- DRAWING ---
     # Root
-    dot.node('root', f"<<B>{author.get('name')}</B>>", shape='circle', 
-             fillcolor='#002F6C', fontcolor='white', width='1.5')
+    dot.node('root', f"<{author.get('name')}>", shape='box', fillcolor='#000000', fontcolor='white', width='1.5')
 
     # Interests Branch
     if display_interests:
-        dot.node('cat_int', hub_label, shape='plaintext', fontcolor='#00A3E0')
-        dot.edge('root', 'cat_int', color='#00A3E0', penwidth='2')
+        dot.node('ai_interests', hub_label, fontcolor='#000000')
+        dot.edge('root', 'ai_interests', color='#00A3E0', penwidth='2')
         
-        for i, topic in enumerate(display_interests):
+        for i, topic in enumerate(ai_themes):
             dot.node(f'topic_{i}', topic, fillcolor=hub_color, fontcolor='#2D3748')
-            dot.edge('cat_int', f'topic_{i}', color='#cfd8dc')
+            dot.edge('ai_interests', f'topic_{i}', color='#cfd8dc')
+        
+    if manual_interests:
+        dot.node('focus_areas', hub_label_manual, fontcolor='#000000')
+        dot.edge('root', 'focus_areas', color='#00A3E0', penwidth='2')
+
+        for i, topic in enumerate(manual_interests):
+            dot.node(f'topic_{i}', topic, fillcolor=hub_color_manual, fontcolor='#2D3748')
+            dot.edge('focus_areas', f'topic_{i}', color='#cfd8dc')
 
     # Stats Branch (Simplified for brevity)
-    citations = author.get('citedby', 0)
-    dot.node('stats', f"Citations\n{citations}", shape='circle', fillcolor='#E3F2FD', fontcolor='#1565C0')
-    dot.edge('root', 'stats', style='dashed')
+    #citations = author.get('citedby', 0)
+    #dot.node('stats', f"Citations\n{citations}", shape='rectangle', fillcolor='#E3F2FD', fontcolor='#1565C0')
+    #dot.edge('root', 'stats', style='dashed')
 
     return dot
 
@@ -164,7 +173,7 @@ if page == "Home":
     
     with col1:
         # Placeholder for your photo. In production, replace URL with your actual photo path.
-        st.image("https://profiles.ucl.ac.uk/64376-maryam-bandukda/photo", width=200)
+        st.image("/Users/maryambandukda/Documents/GitHub/Portfolio/portfolio/Maryam.jpg")
     
     with col2:
         st.title(MY_NAME)
@@ -201,7 +210,7 @@ elif page == "Research Areas":
         
         if profile:
             graph = create_mindmap(profile)
-            st.graphviz_chart(graph, use_container_width=True)
+            st.graphviz_chart(graph)
             
             st.info("This map is generated dynamically from live Google Scholar data.")
         else:
@@ -227,8 +236,9 @@ elif page == "Publications":
         for pub in pubs:
             bib = pub['bib']
             title = bib.get('title', 'Untitled')
+            num_citations = pub['num_citations']
             year = bib.get('pub_year', 'Unknown Year')
-            
+            print(num_citations)
             # --- THE GROUPING LOGIC ---
             # If this paper's year is different from the last one we printed...
             if year != current_year:
@@ -240,15 +250,13 @@ elif page == "Publications":
             
             # Display the paper under the year
             # We use a cleaner layout without expanders for a CV-style look
-            st.markdown(f"**{title}**")
+            #st.markdown(f"**{title}**")
             
             # Helper to create the Google Scholar link
-            if 'author_pub_id' in pub:
-                link = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={MY_SCHOLAR_ID}&citation_for_view={pub['author_pub_id']}"
-                st.caption(f"[View Details]({link})")
-            else:
-                st.caption("No link available")
-            
+            link = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={MY_SCHOLAR_ID}&citation_for_view={pub['author_pub_id']}"
+            with st.expander(f"{title}"):
+                st.write(f"Citations: {num_citations}")
+                st.write(f"View Details: {link}")
             # precise spacing between papers
             st.write("") 
 
