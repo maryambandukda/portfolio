@@ -26,6 +26,7 @@ def fetch_my_profile():
     """
     try:
         author = scholarly.search_author_id(MY_SCHOLAR_ID)
+        print(author)
         author = scholarly.fill(author, sections=['basics', 'indices', 'publications', 'coauthors'])
         return author
     except Exception as e:
