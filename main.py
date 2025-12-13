@@ -15,6 +15,7 @@ MY_SCHOLAR_ID = "CpkUcT0AAAAJ"
 MY_NAME = "Maryam Bandukda"
 YEAR = date.today().year
 THEME_COUNT=4
+IMAGE_URL = "Maryam.jpg"
 
 # --- FIX: DOWNLOAD NLTK DATA ---
 # This forces the download to happen effectively both locally and on the cloud
@@ -173,7 +174,7 @@ if page == "Home":
     
     with col1:
         # Placeholder for your photo. In production, replace URL with your actual photo path.
-        st.image("/Users/maryambandukda/Documents/GitHub/Portfolio/portfolio/Maryam.jpg")
+        st.image(IMAGE_URL)
     
     with col2:
         st.title(MY_NAME)
