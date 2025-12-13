@@ -15,6 +15,7 @@ st.set_page_config(
 # This ensures the map loads YOU immediately without searching.
 MY_SCHOLAR_ID = "CpkUcT0AAAAJ" 
 MY_NAME = "Maryam Bandukda"
+YEAR = @current_year
 
 # --- Helper Functions ---
 
@@ -73,11 +74,11 @@ def create_mindmap(author):
 # --- Sidebar Navigation ---
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Home", "Research Areas", "Publications", "Contact"])
- 
+
 
 st.sidebar.markdown("---")
-st.sidebar.caption(f"© 2025 {MY_NAME}")
-st.sidebar.caption("Global Disability Innovation Hub\nUniversity College London")
+st.sidebar.caption(f"© {YEAR} {MY_NAME}")
+st.sidebar.caption("University College London")
 
 # --- Main Page Logic ---
 
