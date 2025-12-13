@@ -26,7 +26,6 @@ def fetch_my_profile():
     """
     try:
         author = scholarly.search_author_id(MY_SCHOLAR_ID)
-        print(author)
         author = scholarly.fill(author, sections=['basics', 'indices', 'publications', 'coauthors'])
         return author
     except Exception as e:
@@ -161,19 +160,21 @@ elif page == "Publications":
 elif page == "Contact":
     st.title("📬 Get in Touch")
     
-    c1,c2 = st.columns(2)
+    c1, c2 = st.columns(2)
     
     with c1:
         st.subheader("Connect")
         st.markdown(f"""
         - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
         - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
-        """)
-
-    with c2:
-         st.subheader("Office")
-        st.markdown(f"""
-        - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
-        - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
         - **Twitter/X:** [@MaryamBandukda](https://twitter.com/)
+        """)
+    
+    with c2:
+        st.subheader("Office")
+        st.markdown("""
+        Global Disability Innovation Hub  
+        University College London  
+        Marshgate, London E20 2AE  
+        United Kingdom
         """)
