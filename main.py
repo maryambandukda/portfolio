@@ -167,8 +167,12 @@ elif page == "Contact":
         st.markdown(f"""
         - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
         - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
-        - **Twitter/X:** [@MaryamBandukda](https://twitter.com/)
         """)
 
     with c2:
-        
+         st.subheader("Connect")
+        st.markdown(f"""
+        - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
+        - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
+        - **Twitter/X:** [@MaryamBandukda](https://twitter.com/)
+        """)
