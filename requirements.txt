@@ -1,3 +1,5 @@
 streamlit
 scholarly
 graphviz
+streamlit-option-menu
+nltk

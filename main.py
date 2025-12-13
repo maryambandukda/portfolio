@@ -2,6 +2,22 @@ import streamlit as st
 from scholarly import scholarly
 import graphviz
 from datetime import date
+from streamlit_option_menu import option_menu
+import nltk
+from nltk.corpus import stopwords
+from collections import Counter
+import re
+
+# --- FIX: DOWNLOAD NLTK DATA ---
+# This forces the download to happen effectively both locally and on the cloud
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+# -------------------------------
+
+# ... rest of your code ...
+
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -20,6 +36,45 @@ YEAR = date.today().year
 
 # --- Helper Functions ---
 
+# Download necessary NLTK data (run once)
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+def generate_ai_interests(publications):
+    """
+    Uses NLP to analyze publication titles and extract key research themes.
+    """
+    # 1. Harvest all titles
+    titles = [pub['bib'].get('title', '').lower() for pub in publications]
+    all_text = " ".join(titles)
+    
+    # 2. Clean Text (Remove numbers and punctuation)
+    all_text = re.sub(r'[^a-z\s]', '', all_text)
+    
+    # 3. Define Stopwords (Words to ignore)
+    stop_words = set(stopwords.words('english'))
+    # Add academic "filler" words that aren't useful themes
+    custom_stops = {'study', 'analysis', 'using', 'based', 'approach', 'review', 
+                   'system', 'design', 'towards', 'understanding', 'evaluation', 
+                   'exploring', 'impact', 'challenges', 'survey', 'framework'}
+    stop_words.update(custom_stops)
+    
+    # 4. Tokenize
+    words = [w for w in all_text.split() if w not in stop_words and len(w) > 3]
+    
+    # 5. Bigram Analysis (Find common 2-word phrases)
+    # "Visual Impairment" is more useful than just "Visual" or "Impairment"
+    bigrams = zip(words, words[1:])
+    bigram_counts = Counter(bigrams)
+    
+    # Get top 7 themes
+    top_themes = bigram_counts.most_common(7)
+    
+    # Format as strings ("visual impairment")
+    return [f"{t[0]} {t[1]}".title() for t, _ in top_themes]
+
 @st.cache_data(show_spinner=False)
 def fetch_my_profile():
     """
@@ -34,48 +89,68 @@ def fetch_my_profile():
         return None
 
 def create_mindmap(author):
-    """
-    Generates the research graph.
-    """
     if not author: return None
 
     dot = graphviz.Digraph(comment='Research Landscape')
-    dot.attr(rankdir='LR') 
-    dot.attr('node', fontname='Helvetica', shape='box', style='rounded, filled', color='white')
+    dot.attr(rankdir='LR', splines='curved', ranksep='1.2')
+    dot.attr('node', fontname='Helvetica', shape='box', style='rounded,filled', penwidth='0')
     
-    # Root Node
-    dot.node('root', author.get('name'), fillcolor='#2b6cb0', fontcolor='white', fontsize='16', shape='doubleoctagon')
+    # --- DATA PREP ---
+    # 1. Try to get AI generated themes from publications first
+    ai_themes = []
+    if 'publications' in author:
+        ai_themes = generate_ai_interests(author['publications'])
+    
+    # 2. Fallback to manual interests if AI found nothing (e.g. no papers listed)
+    manual_interests = author.get('interests', [])
+    
+    # Decide which to show
+    if ai_themes:
+        display_interests = ai_themes
+        hub_label = "AI-Detected Themes"
+        hub_color = "#E8F5E9" # Green tint for AI
+    else:
+        display_interests = manual_interests[:6]
+        hub_label = "Focus Areas"
+        hub_color = "#edf2f7" # Grey tint for manual
 
-    # 1. Interests Branch
-    interests = author.get('interests', [])
-    if interests:
-        dot.node('int_hub', 'Focus Areas', fillcolor='#edf2f7', color='#cbd5e0')
-        dot.edge('root', 'int_hub')
+    # --- DRAWING ---
+    # Root
+    dot.node('root', f"<<B>{author.get('name')}</B>>", shape='circle', 
+             fillcolor='#002F6C', fontcolor='white', width='1.5')
+
+    # Interests Branch
+    if display_interests:
+        dot.node('cat_int', hub_label, shape='plaintext', fontcolor='#00A3E0')
+        dot.edge('root', 'cat_int', color='#00A3E0', penwidth='2')
         
-        # Limit to top 5 interests to keep graph clean
-        for i, interest in enumerate(interests[:6]):
-            dot.node(f'int_{i}', interest, fillcolor='#e6fffa', color='#b2f5ea')
-            dot.edge('int_hub', f'int_{i}')
-    
-    # 2. Stats Branch
-    dot.node('stats', 'Impact', fillcolor='#edf2f7', color='#cbd5e0')
-    dot.edge('root', 'stats')
-    
+        for i, topic in enumerate(display_interests):
+            dot.node(f'topic_{i}', topic, fillcolor=hub_color, fontcolor='#2D3748')
+            dot.edge('cat_int', f'topic_{i}', color='#cfd8dc')
+
+    # Stats Branch (Simplified for brevity)
     citations = author.get('citedby', 0)
-    hindex = author.get('hindex', 0)
-    
-    dot.node('cit', f"Citations: {citations}", fillcolor='#fffff0', color='#fefcbf')
-    dot.node('hin', f"h-index: {hindex}", fillcolor='#fffff0', color='#fefcbf')
-    
-    dot.edge('stats', 'cit')
-    dot.edge('stats', 'hin')
+    dot.node('stats', f"Citations\n{citations}", shape='circle', fillcolor='#E3F2FD', fontcolor='#1565C0')
+    dot.edge('root', 'stats', style='dashed')
 
     return dot
 
 # --- Sidebar Navigation ---
-st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Research Areas", "Publications", "Contact"])
-
+with st.sidebar:
+    # This creates a nice clean menu with icons
+    page = option_menu(
+        menu_title="Navigation",  # Title (keep empty for cleaner look)
+        options=["Home", "Research Areas", "Publications", "Contact"],
+        icons=["house", "diagram-3", "book", "envelope"], # Bootstrap icons
+        menu_icon="cast",
+        default_index=0,
+        styles={
+            "container": {"padding": "0!important", "background-color": "#fafafa"},
+            "icon": {"color": "black", "font-size": "18px"}, 
+            "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
+            "nav-link-selected": {"background-color": "#2b6cb0"},
+        }
+    )
 
 st.sidebar.markdown("---")
 st.sidebar.caption(f"© {YEAR} {MY_NAME}")
@@ -117,8 +192,8 @@ if page == "Home":
         c2.metric("h-index", profile.get('hindex', 0))
         c3.metric("i10-index", profile.get('i10index', 0))
 
-elif page == "Research Landscape":
-    st.title("🧠 Research Network")
+elif page == "Research Areas":
+    st.title("Research Areas")
     st.markdown("Interactive visualization of my research interests and impact.")
     
     with st.spinner("Generating Knowledge Graph..."):
@@ -180,24 +255,18 @@ elif page == "Publications":
     else:
         st.write("Publications could not be loaded.")
 
+elif page == "Projects":
+    st.title("🚀 Ongoing Projects")
+    
+    st.markdown("""
+    - **Inclusive Navigation for All:** Developing mobile applications to assist blind and partially sighted individuals in navigating urban environments.
+    - **Assistive Technology in the Global South:** Researching affordable and effective assistive technologies tailored for low-resource settings.
+    - **Participatory Design Workshops:** Engaging with communities to co-create solutions that address their unique accessibility challenges.
+    """)
+
 elif page == "Contact":
     st.title("📬 Get in Touch")
-    
-    c1, c2 = st.columns(2)
-    
-    with c1:
-        st.subheader("Connect")
-        st.markdown(f"""
-        - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
-        - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
-        - **Twitter/X:** [@MaryamBandukda](https://twitter.com/)
-        """)
-    
-    with c2:
-        st.subheader("Office")
-        st.markdown("""
-        Global Disability Innovation Hub  
-        University College London  
-        Marshgate, London E20 2AE  
-        United Kingdom
-        """)
+    st.markdown(f"""
+    - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
+    - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
+    """)
