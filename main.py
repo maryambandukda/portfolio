@@ -171,7 +171,7 @@ elif page == "Contact":
         """)
 
     with c2:
-         st.subheader("Connect")
+         st.subheader("Office")
         st.markdown(f"""
         - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
         - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
