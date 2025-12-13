@@ -137,24 +137,43 @@ elif page == "Publications":
         
     if profile:
         pubs = profile.get('publications', [])
-        # Sort by year (newest first)
         
+        # 1. Sort by year (Newest -> Oldest)
+        # We handle 'None' years by treating them as 0
         pubs.sort(key=lambda x: int(x['bib'].get('pub_year', 0) or 0), reverse=True)
         
-        for pub in pubs[:10]: # Show top 10 most recent
+        # 2. Variable to track the year headers
+        current_year = None
+        
+        # Loop through ALL publications (removed the [:10] limit)
+        for pub in pubs:
             bib = pub['bib']
-            title = bib.get('title')
-            year = bib.get('pub_year', 'N/A')
-            citation = bib.get('citation', 'No citation data')
+            title = bib.get('title', 'Untitled')
+            year = bib.get('pub_year', 'Unknown Year')
             
-            with st.expander(f"{year} | {title}"):
-                st.write(f"**Published:** {year}")
-                st.write(f"**Details:** {citation}")
-                # We can't always get the link directly from the object easily without deeper scraping,
-                # but we can link to the scholar entry.
-                if 'author_pub_id' in pub:
-                    link = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={MY_SCHOLAR_ID}&citation_for_view={pub['author_pub_id']}"
-                    st.markdown(f"[View on Google Scholar]({link})")
+            # --- THE GROUPING LOGIC ---
+            # If this paper's year is different from the last one we printed...
+            if year != current_year:
+                # ...print a new Big Year Heading
+                st.markdown(f"### {year}")
+                st.markdown("---") # Add a line for visual separation
+                current_year = year
+            # --------------------------
+            
+            # Display the paper under the year
+            # We use a cleaner layout without expanders for a CV-style look
+            st.markdown(f"**{title}**")
+            
+            # Helper to create the Google Scholar link
+            if 'author_pub_id' in pub:
+                link = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={MY_SCHOLAR_ID}&citation_for_view={pub['author_pub_id']}"
+                st.caption(f"[View Details]({link})")
+            else:
+                st.caption("No link available")
+            
+            # precise spacing between papers
+            st.write("") 
+
     else:
         st.write("Publications could not be loaded.")
 
