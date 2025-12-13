@@ -138,7 +138,8 @@ elif page == "Publications":
     if profile:
         pubs = profile.get('publications', [])
         # Sort by year (newest first)
-        pubs.sort(key=lambda x: x['bib'].get('pub_year', 0), reverse=True)
+        
+        pubs.sort(key=lambda x: int(x['bib'].get('pub_year', 0) or 0), reverse=True)
         
         for pub in pubs[:10]: # Show top 10 most recent
             bib = pub['bib']
