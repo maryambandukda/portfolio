@@ -15,7 +15,7 @@ MY_SCHOLAR_ID = "CpkUcT0AAAAJ"
 MY_NAME = "Maryam Bandukda"
 YEAR = date.today().year
 THEME_COUNT=4
-IMAGE_URL = "Maryam.jpg"
+IMAGE_URL = "/Users/maryambandukda/Documents/GitHub/Portfolio/portfolio/Maryam.jpg"
 
 # --- FIX: DOWNLOAD NLTK DATA ---
 # This forces the download to happen effectively both locally and on the cloud
@@ -150,9 +150,9 @@ with st.sidebar:
     # This creates a nice clean menu with icons
     page = option_menu(
         menu_title="Navigation",  # Title (keep empty for cleaner look)
-        options=["Home", "Research Areas", "Publications", "Contact"],
+        options=["Home", "Research Areas", "Projects", "Publications", "Contact"],
         icons=["house", "diagram-3", "book", "envelope"], # Bootstrap icons
-        menu_icon="cast",
+        menu_icon="list",
         default_index=0,
         styles={
             "container": {"padding": "0!important", "background-color": "#fafafa"},
