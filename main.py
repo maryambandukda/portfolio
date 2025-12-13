@@ -160,7 +160,7 @@ elif page == "Publications":
 elif page == "Contact":
     st.title("📬 Get in Touch")
     
-    c1 = st.columns(1)
+    c1,c2 = st.columns(2)
     
     with c1:
         st.subheader("Connect")
@@ -169,3 +169,6 @@ elif page == "Contact":
         - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
         - **Twitter/X:** [@MaryamBandukda](https://twitter.com/)
         """)
+
+    with c2:
+        
