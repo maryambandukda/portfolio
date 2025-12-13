@@ -1,6 +1,7 @@
 import streamlit as st
 from scholarly import scholarly
 import graphviz
+from datetime import date
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -15,7 +16,7 @@ st.set_page_config(
 # This ensures the map loads YOU immediately without searching.
 MY_SCHOLAR_ID = "CpkUcT0AAAAJ" 
 MY_NAME = "Maryam Bandukda"
-YEAR = @current_year
+YEAR = date.today().year
 
 # --- Helper Functions ---
 
