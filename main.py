@@ -15,6 +15,7 @@ MY_SCHOLAR_ID = "CpkUcT0AAAAJ"
 MY_NAME = "Maryam Bandukda"
 YEAR = date.today().year
 THEME_COUNT=4
+IMAGE_PATH = "/Users/maryambandukda/Documents/GitHub/Portfolio/portfolio/"
 IMAGE_URL = "Maryam.jpg"
 
 # --- FIX: DOWNLOAD NLTK DATA ---
@@ -149,7 +150,7 @@ with st.sidebar:
     # This creates a nice clean menu with icons
     page = option_menu(
         menu_title="Navigation",  # Title (keep empty for cleaner look)
-        options=["Home", "Research Areas", "Projects", "Academic Service", "Publications", "Contact"],
+        options=["Home", "Research Areas", "Projects", "Academic Service", "Publications"],
         icons=["house", "diagram-3", "gear", "chat-heart", "archive", "envelope"], # Bootstrap icons
         menu_icon="list",
         default_index=0,
@@ -169,16 +170,31 @@ st.sidebar.caption("University College London")
 
 if page == "Home":
     # Header Section
-    col1, col2 = st.columns([1, 3])
+    col1, col2 = st.columns([1, 1])
     
     with col1:
         # Placeholder for your photo. In production, replace URL with your actual photo path.
-        st.image(IMAGE_URL)
+        st.image(IMAGE_PATH+IMAGE_URL)
+        st.markdown(f"""
+            [Email](mailto:m.bandukda@ucl.ac.uk) |
+            [Academic Profile](https://profiles.ucl.ac.uk/64376-maryam-bandukda) |
+            [LinkedIn](https://www.linkedin.com/in/maryambandukda) |
+            [ORCID](https://orcid.org/0000-0002-2367-6471) |
+            [Book a meeting with me](https://outlook.office.com/book/MaryamsCalendar@ucl.ac.uk/?ismsaljsauthenabled)
+        """)
+        with st.spinner("Loading latest impact stats..."):
+            profile = fetch_my_profile()
+    
+        if profile:
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Citations", profile.get('citedby', 0))
+            c2.metric("h-index", profile.get('hindex', 0))
+            c3.metric("i10-index", profile.get('i10index', 0))
     
     with col2:
         st.title(MY_NAME)
         st.subheader("Senior Research Fellow")
-        st.markdown("**Global Disability Innovation Hub | UCL**")
+        st.markdown("**Global Disability Innovation Hub | University College London**")
         st.markdown("""
         I am a researcher specializing in **Human-Computer Interaction (HCI)**, **Accessibility**, and **Assistive Technologies**.
         
@@ -188,18 +204,9 @@ if page == "Home":
         """)
         
         st.download_button(label="📄 Download CV", data="Placeholder content for CV", file_name="Maryam_Bandukda_CV.pdf")
-
+    
     st.markdown("---")
-    
     # Quick Stats Row
-    with st.spinner("Loading latest impact stats..."):
-        profile = fetch_my_profile()
-    
-    if profile:
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Citations", profile.get('citedby', 0))
-        c2.metric("h-index", profile.get('hindex', 0))
-        c3.metric("i10-index", profile.get('i10index', 0))
 
 elif page == "Research Areas":
     st.title("Research Areas")
@@ -265,11 +272,6 @@ elif page == "Publications":
                         with st.expander(f"{title}"):
                             st.write(f"**Citations:** {num_citations}")
                             st.markdown(f"[View on Google Scholar]({link})")
-                            
-                            # Optional: Add extra bibliographic info if available
-                            if 'citation' in bib:
-                                st.caption(f"Ref: {bib['citation']}")
-
     else:
         st.error("Publications could not be loaded.")
 
@@ -289,10 +291,3 @@ elif page == "Academic Service":
     
     tab1.write("Tab 1")
     tab2.write("Tab 2")
-
-elif page == "Contact":
-    st.title("📬 Get in Touch")
-    st.markdown(f"""
-    - **Email:** [m.bandukda@ucl.ac.uk](mailto:m.bandukda@ucl.ac.uk)
-    - **LinkedIn:** [Maryam Bandukda](https://www.linkedin.com/search/results/all/?keywords=Maryam%20Bandukda)
-    """)
