@@ -72,7 +72,8 @@ def create_mindmap(author):
 
 # --- Sidebar Navigation ---
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Research Landscape", "Publications", "Contact"])
+page = st.sidebar.radio("Go to", ["Home", "Research Areas", "Publications", "Contact"])
+ 
 
 st.sidebar.markdown("---")
 st.sidebar.caption(f"© 2025 {MY_NAME}")
