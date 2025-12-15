@@ -287,7 +287,13 @@ elif page == "Projects":
 elif page == "Academic Service":
     st.title("Academic Service")
 
-    tab1,tab2 = st.tabs(["2025", "2024"])
+    tab1, tab2, tab3 = st.tabs(["2026", "2025", "2024"])
     
-    tab1.write("Tab 1")
-    tab2.write("Tab 2")
+    tab1.markdown(f"""
+    - ACM CHI 2026 Conference - Accessibility Co-chair
+    - ACM ASSETS 2026 Conference - TACCESS Special Issue Co-Editor
+    """)
+    tab2.markdown(f"""
+    - ACM ASSETS 2026 Conference - Proceedings Chair
+    - Frontiers in Digital Health Special Issue on Disability and Assistive Technology - Associate Editor
+        """)
