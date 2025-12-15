@@ -16,6 +16,7 @@ MY_NAME = "Maryam Bandukda"
 YEAR = date.today().year
 THEME_COUNT=4
 IMAGE_PATH = "/Users/maryambandukda/Documents/GitHub/Portfolio/portfolio/"
+IMAGE_PATH = ""
 IMAGE_URL = "Maryam.jpg"
 
 # --- FIX: DOWNLOAD NLTK DATA ---
